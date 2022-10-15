@@ -8,6 +8,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 
 import java.io.Serializable;
+import java.time.Instant;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.IntStream;
@@ -35,8 +36,13 @@ public class RedisTest extends SpringBootDemoCacheRedisApplicationTests {
     @Test
     public void get() {
         // 测试线程安全，程序结束查看redis中count的值是否为1000
+        long start = Instant.now().toEpochMilli();
+        log.info("【start】= {}", start);
         ExecutorService executorService = Executors.newFixedThreadPool(1000);
-        IntStream.range(0, 1000).forEach(i -> executorService.execute(() -> stringRedisTemplate.opsForValue().increment("count", 1)));
+        IntStream.range(0, 1000).forEach(
+            i -> executorService.execute(() ->
+                stringRedisTemplate.opsForValue().increment("count", 1))
+        );
 
         stringRedisTemplate.opsForValue().set("k1", "v1");
         String k1 = stringRedisTemplate.opsForValue().get("k1");
@@ -48,5 +54,11 @@ public class RedisTest extends SpringBootDemoCacheRedisApplicationTests {
         // 对应 String（字符串）
         User user = (User) redisCacheTemplate.opsForValue().get(key);
         log.debug("【user】= {}", user);
+
+        long end = Instant.now().toEpochMilli();
+
+        log.info("【start】= {}, 【end】= {}, 【time】= {}", start, end, end - start);
+//        【start】= 1665811694299, 【end】= 1665811706618, 【time】= 12319
+//        【start】= 1665812676589, 【end】= 1665812690189, 【time】= 13600
     }
 }
