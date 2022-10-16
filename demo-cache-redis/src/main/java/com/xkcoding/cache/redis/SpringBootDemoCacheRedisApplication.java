@@ -8,6 +8,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @Slf4j
 public class SpringBootDemoCacheRedisApplication {
 
+    private static int  nThreads = 100000;
+
     public static void main(String[] args) {
         SpringApplication.run(SpringBootDemoCacheRedisApplication.class, args);
         log.info("SpringBootDemoCacheRedisApplication 启动成功");

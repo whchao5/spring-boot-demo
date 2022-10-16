@@ -1,6 +1,7 @@
 package com.xkcoding.cache.redis.service.impl;
 
 import com.google.common.collect.Maps;
+import com.xkcoding.cache.redis.config.ThreadPoolConfig;
 import com.xkcoding.cache.redis.entity.User;
 import com.xkcoding.cache.redis.service.CacheService;
 import com.xkcoding.cache.redis.service.UserService;
@@ -32,23 +33,26 @@ public class CacheServiceImpl implements CacheService {
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
 
-    private static int  nThreads = 100000;
+//    private static int  nThreads = 100000;
 //    private  static ExecutorService  executorService = Executors.newFixedThreadPool(nThreads);
-    private  static ExecutorService  executorService = new ThreadPoolExecutor(
-        16,
-    64,
-    60,
-    TimeUnit.MINUTES,
-    new LinkedBlockingQueue<>(nThreads));
+//    private  static ExecutorService  executorService = new ThreadPoolExecutor(
+//        16,
+//    64,
+//    60,
+//    TimeUnit.MINUTES,
+//    new LinkedBlockingQueue<>(nThreads));
+
+    @Autowired
+    private ThreadPoolExecutor redisPoll;
 
     @Override
     public void incrCount() {
         // 测试线程安全，程序结束查看redis中count的值是否为1000
         long start = Instant.now().toEpochMilli();
         log.info("【start】= {}", start);
-        CountDownLatch threadLatchs = new CountDownLatch(nThreads);
-        IntStream.range(0, nThreads).forEach(
-            i -> executorService.execute(() -> {
+        CountDownLatch threadLatchs = new CountDownLatch(ThreadPoolConfig.nThreads);
+        IntStream.range(0, ThreadPoolConfig.nThreads).forEach(
+            i -> redisPoll.execute(() -> {
                 stringRedisTemplate.opsForValue().increment("count", 1);
                 threadLatchs.countDown();
             })
@@ -62,7 +66,13 @@ public class CacheServiceImpl implements CacheService {
         log.info("【start】= {}, 【end】= {}, 【time】= {}", start, end, end - start);
         //  100000 此更新如下
 //【start】= 1665815156457, 【end】= 1665815160849, 【time】= 4552
+        // 线程池
 //        【start】= 1665815578661, 【end】= 1665815581264, 【time】= 2603
 //        【start】= 1665816135849, 【end】= 1665816138739, 【time】= 2890
+
+        // jeids
+//        【start】= 1665828091633, 【end】= 1665828096716, 【time】= 5083
+        // 线程池
+//        【start】= 1665828241842, 【end】= 1665828242653, 【time】= 811
     }
 }

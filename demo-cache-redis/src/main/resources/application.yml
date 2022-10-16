@@ -18,7 +18,13 @@ spring:
         # 连接池中的最大空闲连接 默认 8
         max-idle: 200
         # 连接池中的最小空闲连接 默认 0
-        min-idle: 100
+        min-idle: 50
+    jedis:
+      pool:
+        min-idle: 50
+        max-active: 200
+        max-idle: 200
+        max-wait: -1ms
 logging:
   level:
     com.xkcoding: info
